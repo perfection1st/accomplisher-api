@@ -28,36 +28,46 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
-// Register a new user
+// USER REGISTRATION
 app.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    // Check if the username already exists in the database
-    const { rowCount } = await pool.query('SELECT COUNT(*) FROM users WHERE username = $1', [username]);
-    if (rowCount > 0) {
-      return res.status(409).send('Username already exists');
+    // Check if the email already exists in the database
+    const countQuery = 'SELECT COUNT(*) FROM users WHERE email = $1';
+    console.log('Existence check query:', countQuery);
+    console.log('Existence check query parameters:', [email]);
+
+    const result = await pool.query(countQuery, [email]);
+    console.log('Existence check query result:', result);
+
+    const count = parseInt(result.rows[0].count, 10);
+    if (count > 0) {
+      return res.status(409).send('Email already exists');
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert the new user into the database
-    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+    const insertQuery = 'INSERT INTO users (email, password, created_on) VALUES ($1, $2, $3)';
+    console.log('Registration query:', insertQuery);
+    console.log('Registration query parameters:', [email, '***', new Date()]);
+
+    await pool.query(insertQuery, [email, hashedPassword, new Date()]);
 
     res.status(201).send('User registered successfully');
   } catch (err) {
-    console.error(err);
     res.status(500).send('Error registering user');
   }
 });
 
-// Implement authentication system
+// USER LOGIN
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
     const { rows } = await pool.query(
-      'SELECT * FROM users WHERE username = $1',
-      [username]
+      'SELECT * FROM users WHERE email = $1',
+      [email]
     );
     if (rows.length > 0) {
       const user = rows[0];
@@ -69,10 +79,10 @@ app.post('/login', async (req, res) => {
         res.status(401).send('Invalid password');
       }
     } else {
-      res.status(401).send('Invalid username');
+      res.status(401).send('Invalid email');
     }
   } catch (err) {
-    console.error(err);
+    console.error(err); // Remove in production
     res.status(500).send('Error querying database');
   }
 });

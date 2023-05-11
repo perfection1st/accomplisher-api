@@ -3,14 +3,11 @@ DROP TABLE IF EXISTS todos CASCADE;
 DROP TABLE IF EXISTS workouts CASCADE;
 DROP TABLE IF EXISTS meals CASCADE;
 
-
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
-  created_on DATE,
-  username VARCHAR(50),
-  password VARCHAR(255)
+  created_on DATE NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE todos (
@@ -18,7 +15,7 @@ CREATE TABLE todos (
   user_id INTEGER REFERENCES users(id),
   task TEXT NOT NULL,
   due_date DATE,
-  important BOOLEAN default false,
+  important BOOLEAN DEFAULT false,
   completed BOOLEAN DEFAULT false
 );
 
