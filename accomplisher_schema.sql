@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS todos;
-DROP TABLE IF EXISTS workouts;
-DROP TABLE IF EXISTS meals;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS todos CASCADE;
+DROP TABLE IF EXISTS workouts CASCADE;
+DROP TABLE IF EXISTS meals CASCADE;
 
 
 CREATE TABLE users (
@@ -10,7 +10,7 @@ CREATE TABLE users (
   last_name VARCHAR(50),
   created_on DATE,
   username VARCHAR(50),
-  password VARCHAR(255),
+  password VARCHAR(255)
 );
 
 CREATE TABLE todos (

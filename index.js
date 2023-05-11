@@ -7,7 +7,9 @@ require('dotenv').config();
 const app = express();
 const port = 3000;
 
-// Create a pool object that connects to your PostgreSQL database using the connection string
+app.use(express.static('pages'));
+app.use(express.json());
+
 const pool = new Pool({
   connectionString: process.env.PG_CONNECT,
 });
@@ -23,6 +25,29 @@ app.get('/users/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Error querying database');
+  }
+});
+
+// Register a new user
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    // Check if the username already exists in the database
+    const { rowCount } = await pool.query('SELECT COUNT(*) FROM users WHERE username = $1', [username]);
+    if (rowCount > 0) {
+      return res.status(409).send('Username already exists');
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert the new user into the database
+    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+
+    res.status(201).send('User registered successfully');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error registering user');
   }
 });
 
